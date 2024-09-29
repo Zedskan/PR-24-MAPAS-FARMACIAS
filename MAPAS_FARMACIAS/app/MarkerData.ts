@@ -101,4 +101,38 @@ export const markers: Marker1[] = [
         medicamentosControlados: 'NINGUNO',
         horas: 'h8'
     },
+    // Nueva farmacia "22 DE ENERO"
+    {
+        id: '6',
+        latitude: -17.40300455,
+        longitude: -66.0310448,
+        name: '22 DE ENERO',
+        sector: 'Privados',
+        tipo: 'Farmacia Privada',
+        direccion: 'AV. BARRIENTOS KM13 S/N ENTRE CALLE SANTA CRUZ Y AV. AMERICA',
+        zona: '7 ESQUINAS',
+        municipio: 'Sacaba',
+        propietario: 'SEJAS AVENDAÑO GABRIELA',
+        nit: '9410495019',
+        numeroReferencia: 'NINGUNO',
+        medicamentosControlados: 'NINGUNO',
+        horas: 'h8'
+    },
+    // Nueva farmacia "24/7"
+    {
+        id: '7',
+        latitude: -17.35262676,
+        longitude: -66.28693961,
+        name: '24/7',
+        sector: 'Privados',
+        tipo: 'Farmacia Privada',
+        direccion: 'AV. SANTA CRUZ ACERA NORTE ENTRE LA AV. TUPUYAN Y CALLE INNOMINADA S/N',
+        zona: 'MARQUINA',
+        municipio: 'Quillacollo',
+        propietario: 'CARRILLO LOPEZ CLEVER ABDUL',
+        nit: '7935503017',
+        numeroReferencia: 'NINGUNO',
+        medicamentosControlados: 'NINGUNO',
+        horas: 'h8'
+    },
 ];
