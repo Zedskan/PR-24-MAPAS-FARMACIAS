@@ -1,50 +1,59 @@
 {
-  "expo": {
-    "name": "MAPAS_FARMACIAS",
-    "slug": "MAPAS_FARMACIAS",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "iphone13",
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceder a tu ubicación.",
-        "NSLocationAlwaysUsageDescription": "Esta aplicación necesita acceder a tu ubicación en todo momento."
-      }
-    },
-    "android": {
-      "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
-      ],
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "751fa72a-c0fc-4f79-95bd-299ae6982db3"
-      }
+  "name": "MAPAS_FARMACIAS",
+  "slug": "MAPAS_FARMACIAS",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "icon": "./assets/images/icon.png",
+  "scheme": "myapp",
+  "userInterfaceStyle": "automatic",
+  "splash": {
+    "image": "./assets/images/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#ffffff"
+  },
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "iphone13",
+    "infoPlist": {
+      "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceder a tu ubicación.",
+      "NSLocationAlwaysUsageDescription": "Esta aplicación necesita acceder a tu ubicación en todo momento.",
+      "UIBackgroundModes": ["fetch", "remote-notification"],
+      "UIUserNotificationUsageDescription": "Esta aplicación necesita enviar notificaciones para mantenerte informado."
     }
+  },
+  "android": {
+      "permissions": [
+    "ACCESS_FINE_LOCATION",
+    "ACCESS_COARSE_LOCATION",
+    "RECEIVE_BOOT_COMPLETED",
+    "VIBRATE",
+    "com.google.android.c2dm.permission.RECEIVE",
+    "android.permission.POST_NOTIFICATIONS",
+    "android.permission.ACCESS_NOTIFICATION_POLICY" 
+  ],
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/adaptive-icon.png",
+      "backgroundColor": "#ffffff"
+    }
+  },
+  "web": {
+    "bundler": "metro",
+    "output": "static",
+    "favicon": "./assets/images/favicon.png"
+  },
+  "experiments": {
+    "typedRoutes": true
+  },
+  "extra": {
+    "eas": {
+      "projectId": "751fa72a-c0fc-4f79-95bd-299ae6982db3"
+    }
+  },
+  "owner": "zedskan",
+  "runtimeVersion": {
+    "policy": "appVersion"
+  },
+  "updates": {
+    "url": "https://u.expo.dev/751fa72a-c0fc-4f79-95bd-299ae6982db3"
   }
 }

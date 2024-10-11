@@ -7,6 +7,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import SlidingPanel from './SlidingPanel';
 import { markers, Marker1 } from './MarkerData';
 import { Picker } from '@react-native-picker/picker';
+import * as Notifications from 'expo-notifications';
 
 const INITIAL_REGION = {
   latitude: -17.3895,
@@ -16,36 +17,12 @@ const INITIAL_REGION = {
 };
 
 const municipios = [
-  'Cochabamba',
-  'Sacaba',
-  'Quillacollo',
-  'Villa Tunari',
-  'Tiquipaya',
-  'Colcapirhua',
-  'Vinto',
-  'Puerto Villarroel',
-  'Sipe Sipe',
-  'Entre Ríos',
-  'Punata',
-  'Mizque',
-  'Tapacarí',
-  'Independencia',
-  'Aiquile',
-  'Cliza',
-  'Chimoré',
-  'Tiraque',
-  'Shinahota',
-  'Capinota',
-  'Colomi',
-  'Cocapata',
-  'Arbieto',
-  'Totora',
-  'San Benito',
-  'Morochata',
-  'Pocona',
-  'Arque',
-  'Tacopaya',
-  'Pojo'
+  'Cochabamba', 'Sacaba', 'Quillacollo', 'Villa Tunari', 'Tiquipaya',
+  'Colcapirhua', 'Vinto', 'Puerto Villarroel', 'Sipe Sipe', 'Entre Ríos', 
+  'Punata', 'Mizque', 'Tapacarí', 'Independencia', 'Aiquile', 'Cliza', 
+  'Chimoré', 'Tiraque', 'Shinahota', 'Capinota', 'Colomi', 'Cocapata',
+  'Arbieto', 'Totora', 'San Benito', 'Morochata', 'Pocona', 'Arque', 
+  'Tacopaya', 'Pojo'
 ];
 
 export default function App() {
@@ -61,6 +38,8 @@ export default function App() {
 
   useEffect(() => {
     requestLocationPermission();
+    requestNotificationPermission(); // Pedir permiso para notificaciones
+    listenForPharmacyChanges(); // Simular cambios en las farmacias y notificar
   }, []);
 
   useEffect(() => {
@@ -69,13 +48,13 @@ export default function App() {
       const matchesMunicipio = selectedMunicipio ? marker.municipio === selectedMunicipio : true;
       return matchesQuery && matchesMunicipio;
     });
-
     setFilteredMarkers(filtered);
   }, [searchQuery, selectedMunicipio]);
 
   const requestLocationPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
+    console.log("Requesting location permission...");
+    try {
+      if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
@@ -87,37 +66,42 @@ export default function App() {
           }
         );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log("Location permission granted.");
           setLocationPermission(true);
           getUserLocation();
         } else {
+          console.log("Location permission denied.");
           Alert.alert('Permiso denegado', 'No se puede acceder a la ubicación.');
         }
-      } catch (err) {
-        console.warn(err);
+      } else {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        console.log("Location permission status:", status);
+        if (status !== 'granted') {
+          Alert.alert('Permiso denegado', 'No se puede acceder a la ubicación.');
+          return;
+        }
+        setLocationPermission(true);
+        getUserLocation();
       }
-    } else {
-      setLocationPermission(true);
-      getUserLocation();
+    } catch (error) {
+      console.warn("Error requesting location permission:", error);
     }
   };
 
   const getUserLocation = async () => {
+    console.log("Getting user location...");
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'No se puede acceder a la ubicación.');
-        return;
-      }
-
       const location = await Location.getCurrentPositionAsync({});
+      console.log("User location:", location);
       setCurrentLocation(location.coords);
     } catch (error) {
+      console.log("Error getting user location:", error);
       Alert.alert('Error', 'No se pudo obtener la ubicación.');
-      console.log(error);
     }
   };
 
   const centerUserLocation = () => {
+    console.log("Centering map on user location...");
     if (currentLocation) {
       mapRef.current?.animateCamera({
         center: {
@@ -132,6 +116,7 @@ export default function App() {
   };
 
   const onMarkerSelected = (marker: Marker1) => {
+    console.log("Selected marker:", marker);
     setSelectedMarker(marker);
     setPanelVisible(true);
     mapRef.current?.animateCamera({
@@ -144,22 +129,60 @@ export default function App() {
   };
 
   const closePanel = () => {
+    console.log("Closing marker info panel...");
     setPanelVisible(false);
     setSelectedMarker(null);
   };
 
   const onSearchResultSelect = (marker: Marker1) => {
+    console.log("Search result selected:", marker);
     onMarkerSelected(marker);
     setSearchQuery('');  // Limpiar la barra de búsqueda
   };
 
   const resetFilters = () => {
+    console.log("Resetting filters...");
     setSearchQuery('');
     setSelectedMunicipio('');
   };
 
   const shouldShowClearButton = () => {
-    return selectedMunicipio.length > 0 || searchQuery.length > 0; // Mostrar si hay un municipio o búsqueda seleccionada
+    return selectedMunicipio.length > 0 || searchQuery.length > 0;
+  };
+
+  const requestNotificationPermission = async () => {
+    console.log("Requesting notification permission...");
+    const { status } = await Notifications.requestPermissionsAsync();
+    console.log("Notification permission status:", status);
+    if (status !== 'granted') {
+      Alert.alert('Permiso de notificación denegado', 'No se pueden mostrar notificaciones sin permisos.');
+    }
+  };
+
+  const listenForPharmacyChanges = () => {
+    console.log("Listening for pharmacy changes...");
+    setTimeout(() => {
+      console.log("Simulating pharmacy change...");
+      sendNotification('Cambio de turno', 'La farmacia cercana ha cambiado su turno.');
+    }, 5000);
+  };
+
+  const sendNotification = async (title: string, body: string) => {
+    try {
+      await Notifications.presentNotificationAsync({
+        title: title,
+        body: body,
+      });
+      console.log(`Sending notification: ${title} - ${body}`);
+      console.log("Notification sent successfully.");
+    } catch (error) {
+      console.log("Error sending notification:", error);
+    }
+  };
+  
+  const handleNotificationButtonPress = () => {
+    console.log("Notification button pressed.");
+    sendNotification('Notificación Simulada', 'Esta es una notificación simulada.');
   };
 
   return (
@@ -186,7 +209,6 @@ export default function App() {
         <Icon name="bullseye" size={24} color="blue" />
       </TouchableOpacity>
 
-      {/* Barra de búsqueda */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -216,23 +238,20 @@ export default function App() {
             )}
           />
         )}
+        {shouldShowClearButton() && (
+          <TouchableOpacity style={styles.clearButton} onPress={resetFilters}>
+            <Text style={styles.clearButtonText}>Limpiar filtros</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Botón para quitar filtros */}
-      {shouldShowClearButton() && (
-        <TouchableOpacity style={styles.clearButton} onPress={resetFilters}>
-          <Text style={styles.clearButtonText}>Quitar Filtros</Text>
-        </TouchableOpacity>
+      {selectedMarker && panelVisible && (
+        <SlidingPanel marker={selectedMarker} onClose={closePanel} visible={false} />
       )}
 
-      {/* Panel deslizante con detalles de la farmacia */}
-      {panelVisible && selectedMarker && (
-        <SlidingPanel
-          marker={selectedMarker}
-          onClose={closePanel}
-          visible={panelVisible}
-        />
-      )}
+      <TouchableOpacity style={styles.notificationButton} onPress={handleNotificationButtonPress}>
+        <Text style={styles.notificationButtonText}>Enviar notificación</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -245,7 +264,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 10,
     borderRadius: 50,
-    elevation: 5,
+    zIndex: 1000,
   },
   searchContainer: {
     position: 'absolute',
@@ -253,43 +272,53 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
     backgroundColor: 'white',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    elevation: 5,
+    padding: 10,
+    borderRadius: 10,
+    zIndex: 10,
   },
   searchInput: {
     height: 40,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 8,
+    marginBottom: 10,
     paddingHorizontal: 10,
   },
   picker: {
-    height: 50,
-    width: '100%',
-    backgroundColor: '#f1f1f1',
-    borderRadius: 8,
-    marginTop: 10,
+    height: 40,
+    marginBottom: 10,
   },
   searchResults: {
-    maxHeight: 150,
+    maxHeight: 200,
   },
   searchResultItem: {
     padding: 10,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
+    backgroundColor: '#f0f0f0',
+    marginVertical: 5,
   },
   clearButton: {
-    position: 'absolute',
-    bottom: 70,
-    left: 10,
-    backgroundColor: '#ff6347',
     padding: 10,
-    borderRadius: 8,
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
   },
   clearButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+  },
+  notificationButton: {
+    position: 'absolute',
+    bottom: 10,
+    left: '50%',
+    transform: [{ translateX: -75 }],
+    backgroundColor: 'blue',
+    padding: 15,
+    borderRadius: 10,
+    zIndex: 1000,
+  },
+  notificationButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
