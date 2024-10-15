@@ -1,37 +1,93 @@
-'use strict';
+const express = require('express');
+const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const app = express();
 
-const net = require('net');
-const EventEmitter = require('events').EventEmitter;
+app.use(express.json());
 
-const Connection = require('./connection');
-const ConnectionConfig = require('./connection_config');
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'redbull2019',
+  database: 'pharmacymaps',
+});
 
-// TODO: inherit Server from net.Server
-class Server extends EventEmitter {
-  constructor() {
-    super();
-    this.connections = [];
-    this._server = net.createServer(this._handleConnection.bind(this));
+db.connect((err) => {
+  if (err) {
+    console.error('Error conectando a la base de datos:', err);
+    return;
+  }
+  console.log('Conectado a la base de datos MySQL.');
+});
+
+const validarContrasena = (password) => {
+  const regexMayuscula = /[A-Z]/;
+  const regexMinuscula = /[a-z]/;
+  const regexNumero = /\d/;
+  const regexEspecial = /[!@#$%^&*(),.?":{}|<>]/;
+
+  if (password.length < 8) {
+    return 'La contraseña debe tener al menos 8 caracteres.';
+  }
+  if (!regexMayuscula.test(password)) {
+    return 'La contraseña debe contener al menos una letra mayúscula.';
+  }
+  if (!regexMinuscula.test(password)) {
+    return 'La contraseña debe contener al menos una letra minúscula.';
+  }
+  if (!regexNumero.test(password)) {
+    return 'La contraseña debe contener al menos un número.';
+  }
+  if (!regexEspecial.test(password)) {
+    return 'La contraseña debe contener al menos un carácter especial.';
+  }
+  return null;
+};
+
+app.post('/register', async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ message: 'Todos los campos son obligatorios.' });
   }
 
-  _handleConnection(socket) {
-    const connectionConfig = new ConnectionConfig({
-      stream: socket,
-      isServer: true
-    });
-    const connection = new Connection({ config: connectionConfig });
-    this.emit('connection', connection);
-  }
+  const queryCheckEmail = 'SELECT * FROM users WHERE email = ?';
+  db.query(queryCheckEmail, [email], async (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error al verificar el correo electrónico.' });
+    }
 
-  listen(port) {
-    this._port = port;
-    this._server.listen.apply(this._server, arguments);
-    return this;
-  }
+    if (results.length > 0) {
+      return res.status(400).json({ message: 'El correo electrónico ya está registrado.' });
+    }
 
-  close(cb) {
-    this._server.close(cb);
-  }
-}
+    const mensajeErrorContrasena = validarContrasena(password);
+    if (mensajeErrorContrasena) {
+      return res.status(400).json({ message: mensajeErrorContrasena });
+    }
 
-module.exports = Server;
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const role = 'propietario';
+
+      const queryInsertUser = 'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)';
+      db.query(queryInsertUser, [username, email, hashedPassword, role], (err, result) => {
+        if (err) {
+          console.error('Error al registrar el usuario:', err);
+          return res.status(500).json({ message: 'Error al registrar el usuario.' });
+        }
+        res.status(201).json({ message: 'Usuario registrado correctamente.' });
+      });
+    } catch (error) {
+      console.error('Error al registrar el usuario:', error);
+      res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+  });
+});
+
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
+});
+
