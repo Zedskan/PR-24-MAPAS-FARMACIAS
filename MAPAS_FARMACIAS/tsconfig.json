@@ -1,0 +1,17 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "app/**/*.ts",           // Incluye todos los archivos TypeScript en la carpeta `app`
+    "app/**/*.tsx",          // Incluye todos los archivos TypeScript JSX en la carpeta `app`
+    ".expo/types/**/*.ts",   // Incluye los tipos de Expo
+    "expo-env.d.ts"          // Archivos específicos adicionales
+, "screens/Components/SlidingPanel.tsx", "constants/MarkerData.ts"  ],
+}
