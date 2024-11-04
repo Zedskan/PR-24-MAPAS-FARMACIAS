@@ -1,0 +1,148 @@
+use pharmacy;
+
+#para la creacion de un Usuario para la coneccion
+CREATE USER 'Admin'@'%' IDENTIFIED BY '123';
+GRANT ALL PRIVILEGES ON pharmacy.* TO 'Admin'@'%';
+FLUSH PRIVILEGES;
+#---------------------------------------------------------------------------------------------------------
+INSERT INTO person (name, lastName, numberPhone, nit, email) 
+VALUES ("Jhael", "Kuno", "68842185", "2355235253", "kbj500147@gmail.com");
+INSERT INTO user(id, userName, password, role) VALUES(19, "KBJ",SHA2("123", 256),"Administrador");
+
+INSERT INTO person (name, lastName, numberPhone, nit, email) 
+VALUES ("Cris", "Ferns", "68842185", "23543443", "crisFer@gmail.com");
+INSERT INTO user(id, userName, password, role) VALUES(20, "CRI",SHA2("123", 256),"Propietario");
+
+SELECT * FROM user;
+#------------------------------------------------------------------------------------------------------------------
+
+SELECT u.id, u.userName, u.password, u.role, u.firstLogin, u.status, p.email 
+FROM user u
+INNER JOIN  person p ON u.id = p.id 
+WHERE userName = 'BOR' AND u.status = 1;
+
+SELECT * FROM person;
+SELECT * FROM user;
+
+
+#-----------Registro de Ciudades
+INSERT INTO town (name)
+VALUES 
+('Cochabamba' ),
+('Quillacollo'),
+('Sacaba'),
+('Tiquipaya'),
+('Vinto'),
+('Colcapirhua');
+SELECT id, name FROM town WHERE status = 1 ;
+
+#-----------Registro de Zona---------------
+INSERT INTO zona (name, idTown) VALUES
+('PUCARA GRANDE', 13),
+('QUERU QUERU', 13),
+('CENTRAL', 13),
+('SAN MIGUEL', 14),
+('SARCOBAMBA', 13),
+('SUD ESTE', 13);
+SELECT * FROM zona;
+
+#-----------Registro de Tipo --------------------
+INSERT INTO typepharmacy (name ) VALUES
+('FARMACIA INSTITUCIONAL'),
+('Farmacia Privada'),
+('Farmacia Hospitalaria'),
+('Botiquín'),
+('Distribuidora');
+SELECT * FROM typepharmacy;
+
+
+#-----------Registro de Serctor-------------
+INSERT INTO sector (name) VALUES
+('Privado'),
+('Publico');
+SELECT * FROM sector;
+
+
+
+#-----------Red de Salud-------------
+INSERT INTO healthnetwork (name) VALUES
+('RED DE SALUD'),
+('CERCADO'),
+('SACABA'),
+('QUILLACOLLO'),
+('VILLA TUNARI');
+SELECT * FROM healthnetwork;
+
+
+
+
+#-----Registro de medicamentos controlados-----------
+INSERT INTO controlledmedications (typeMedicine,  idPharmacy) VALUES
+('NINGUNO' ),
+('AMBOS'),
+('PSICOTROPICOS');
+
+
+#-----Registro de Medicamentos---
+INSERT INTO pharmacy (
+    name, address, latitude, longitude, phone, codeZona, idSector, idTypePharmacy, idZona, idHealthNetwork, idUser) VALUES
+('Farmacia Central', 'Av. 1 de Mayo 123', '-17.789999', '-63.180000', '123456789', 'CENTRAL',
+ 5, 7, 15, 7,  20),
+
+('Farmacia San Miguel', 'Calle San Miguel 456', '-17.780000', '-63.185000', '987654321', 'SAN_MIGUEL',
+ 5, 7, 16, 7, 20),
+
+('Farmacia La Paz', 'Calle La Paz 789', '-17.790000', '-63.190000', '456789123', 'LA_PAZ',
+ 5, 7, 17, 7, 20);
+
+
+
+
+SELECT id, name, address, latitude, longitude, phone, codeZona, status, idSector, idTypePharmacy, idZona, idHealthNetwork, idTown, idUser 
+            FROM pharmacy 
+            WHERE status = 1;
+            
+            
+SELECT 
+    p.id,
+    p.name,
+    p.address,
+    p.latitude,
+    p.longitude,
+    p.phone,
+    p.codeZona,
+    p.status,
+    s.name AS sectorName,
+    tp.name AS typePharmacy,
+    z.name AS zonaName,
+    hn.name AS healthNetwork,
+    t.name AS townName,
+    u.userName AS userName,
+    pe.name AS personName,
+    pe.lastName AS personLastName
+
+FROM pharmacy p
+INNER JOIN sector s ON p.idSector = s.id
+INNER JOIN typepharmacy tp ON p.idTypePharmacy = tp.id
+INNER JOIN zona z ON p.idZona = z.id
+INNER JOIN healthnetwork hn ON p.idHealthNetwork = hn.id
+INNER JOIN town t ON z.idTown = t.id
+INNER JOIN user u ON p.idUser = u.id
+INNER JOIN person pe ON pe.id = u.id
+WHERE p.status = 1;
+
+
+
+
+UPDATE `pharmacy`.`zona`
+SET `idTown` = 14   WHERE `id` = 25 ;
+
+
+
+SELECT * FROM user ;
+
+UPDATE pharmacy SET status = 1 WHERE id = 27;
+SELECT * FROM pharmacy;
+--Esto modifica la cantidad de caracteres que permite el atributo address del registro de farmacias
+ALTER TABLE pharmacy
+MODIFY address VARCHAR(350);
