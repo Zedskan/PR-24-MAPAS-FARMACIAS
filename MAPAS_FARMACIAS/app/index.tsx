@@ -194,6 +194,7 @@ export default function App() {
         showsMyLocationButton={false}
         provider={PROVIDER_GOOGLE}
         ref={mapRef}
+        scrollEnabled={!panelVisible}
       >
         {filteredMarkers.map((marker: Marker1) => (
           <Marker
@@ -243,15 +244,30 @@ export default function App() {
             <Text style={styles.clearButtonText}>Limpiar filtros</Text>
           </TouchableOpacity>
         )}
+        
+         {panelVisible && selectedMarker && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000 }}>
+        <SlidingPanel
+          marker={selectedMarker}
+          onClose={closePanel}
+          visible={panelVisible}
+        />
+      </View>
+      )}
       </View>
 
       {selectedMarker && panelVisible && (
         <SlidingPanel marker={selectedMarker} onClose={closePanel} visible={false} />
       )}
+      
+      
+      
+        {/* <TouchableOpacity style={styles.notificationButton} onPress={handleNotificationButtonPress}> //Boton Enviar Notifiacion 
+           <Text style={styles.notificationButtonText}>Enviar notificación</Text>
+        </TouchableOpacity> */}
 
-      <TouchableOpacity style={styles.notificationButton} onPress={handleNotificationButtonPress}>
-        <Text style={styles.notificationButtonText}>Enviar notificación</Text>
-      </TouchableOpacity>
+      
+
     </View>
   );
 }
