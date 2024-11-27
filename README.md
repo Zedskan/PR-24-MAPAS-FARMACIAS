@@ -124,8 +124,4 @@ Fallas en las peticiones: Verificar las respuestas HTTP en la consola.
 ## Backend
 Errores en la API: Revisar los logs del servidor.
 Conexión fallida a la base de datos: Comprobar la configuración de la cadena de conexión.
-# Referencias
 
-Documentación React
-Documentación Google Maps API
-Documentación Node.js
